@@ -3,11 +3,11 @@
 ベーカリーカフェ **Bakery S** の WordPress テーマです。
 `docs/ui_reference/` のスマホ特化型デザインを WordPress で更新できるようにします。
 
-<img width="330" height="717" alt="image_mobile" src="https://github.com/user-attachments/assets/3b675bd7-1b92-4bee-bff9-7bb147545528" />
+<img width="330" height="717" alt="image" src="https://github.com/user-attachments/assets/c4a5560e-6a53-474f-b2cb-1447cda1aa75" />
 
 モバイル表示の場合
 
-<img width="1920" height="911" alt="image_pc" src="https://github.com/user-attachments/assets/b13a6000-685f-4a75-94b0-d045c394464c" />
+<img width="1920" height="911" alt="image" src="https://github.com/user-attachments/assets/aa78e961-2ef0-428f-a007-2892c04e4301" />
 
 PC表示の場合
 
