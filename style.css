@@ -1,0 +1,17 @@
+/*
+Theme Name: bakery_modan
+Theme URI:
+Author:
+Author URI:
+Description: ベーカリーカフェ Bakery S のスマホ特化型サイト用テーマです。季節のパン、いつものパン、焼き上がり時間、店舗情報を掲載できます。
+Version: 0.1.0
+Requires at least: 6.5
+Tested up to: 6.9
+Requires PHP: 8.2
+License: GNU General Public License v3.0
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
+Text Domain: bakery-s
+Tags: custom-logo, featured-images, translation-ready
+*/
+
+/* スタイル・JS は dist/（pnpm run build で生成）を functions.php から読み込みます。 */

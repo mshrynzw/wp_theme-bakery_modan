@@ -1,0 +1,14 @@
+.bkery-color-presets__row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.bkery-color-presets__select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bkery-color-presets__reset {
+  margin-top: 8px;
+}

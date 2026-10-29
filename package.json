@@ -1,0 +1,21 @@
+{
+  "name": "wp-theme-bakery-modan",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "watch": "vite build --watch",
+    "build": "vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.7.2",
+    "vite": "6.3.5",
+    "vitest": "^4.1.8"
+  }
+}

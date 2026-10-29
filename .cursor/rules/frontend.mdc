@@ -1,0 +1,121 @@
+---
+description: Vite 6 / TypeScript 5 のフロント規約。モック CSS を移し、Tailwind は使わない。
+globs: "src/**/*.{ts,css}"
+alwaysApply: false
+---
+
+# フロント規約（Vite + TypeScript）
+
+## ビルド（固定）
+
+- エントリ: `src/main.ts`
+- 出力: `dist/js/theme.js` と `dist/css/app.css`
+- 設定: `vite.config.ts`（`cssCodeSplit: false`）
+- 出力ファイル名は変えない。`inc/enqueue.php` がこのパスを読む。
+- Tailwind は入れない。`tailwind.config.js` も `@tailwindcss/vite` も追加しない。
+- jQuery と GSAP は追加しない。湯気だけ `three` のシェーダー（`src/steam.ts`）を使う。
+
+## CSS
+
+`src/styles/theme.css` は `docs/ui_reference/style.css` の移設先。
+
+- クラス名とカスタムプロパティ名（`--flour`、`--col-w`、`--crust` など）を変えない。
+- 色の初期値は `inc/theme-mods.php` の標準配色（清潔な青）と `:root` を同じ値にする。カスタマイザーは実行時に同じ変数を上書きする。
+- フォントは Outfit と Zen Kaku Gothic New。Fraunces と Zen Maru Gothic には戻さない。
+- すりガラスは `backdrop-filter` と半透明の面で表す。`prefers-reduced-transparency` では不透明に戻す。
+- 見た目は光のパビリオン。光環、区画の展示番号、浮いたガラスを残し、紙袋のギザギザには戻さない。
+- 768px 未満では `.stage` と `.rail` を出さない。この分岐を崩さない。
+- `prefers-reduced-motion: reduce` の既存ルールを残す。
+
+## エントリ
+
+機能は `src/<feature>.ts` に分け、`src/main.ts` から `import` する。
+
+```ts
+import './styles/theme.css';
+import { initStatus } from './status';
+import { initHero } from './hero';
+import { initCarousel } from './carousel';
+import { initProductSheet } from './product-sheet';
+import { initLightbox } from './lightbox';
+import { initVideo } from './video';
+import { initStage } from './stage';
+import { initReveal } from './reveal';
+import { initShopUi } from './shop-ui';
+import { initSteam } from './steam';
+
+const ready = (cb: () => void) => {
+  if (document.readyState !== 'loading') cb();
+  else document.addEventListener('DOMContentLoaded', cb);
+};
+
+ready(() => {
+  initStatus();
+  initHero();
+  initCarousel();
+  initProductSheet();
+  initLightbox();
+  initVideo();
+  initStage();
+  initReveal();
+  initShopUi();
+  initSteam();
+});
+```
+
+時刻計算は `src/shop-status.ts` の公開関数だけを使う。`initStatus()` は DOM を更新し、計算式を複製しない。
+
+| ファイル | 役割 |
+|---|---|
+| `shop-status.ts` | 実装済み。営業状況・次の枠・待ち時間 |
+| `status.ts` | 1分ごとの再描画、焼き上がりリストの `is-next` / `is-past` |
+| `hero.ts` | 6秒間隔、ドット、スワイプ、ホバーと画面外で停止、扉の演出は一度 |
+| `carousel.ts` | `[data-carousel]` の scroll-snap、前後、ドット、左右キー |
+| `product-sheet.ts` | 商品詳細ダイアログ。ドラッグ、外側、閉じる、Esc |
+| `lightbox.ts` | 店内写真の拡大。前後、スワイプ、左右キー |
+| `video.ts` | 開くまで `<video>` を作らない。閉じたら停止 |
+| `stage.ts` | 幅 768px 以上だけ背景を読む。7秒で複数写真を切替 |
+| `reveal.ts` | `[data-reveal]` に `is-in`。reduced-motion では付与しない |
+| `shop-ui.ts` | 住所コピー、`[data-link]` と Instagram 表示名、固定ナビと目次の現在地 |
+| `steam.ts` | 湯気の開始と停止。カスタマイザーでオフ、`prefers-reduced-motion`、透明度低減では出さない |
+| `steam-gl.ts` | Three.js のシェーダー。`theme.js` とは別チャンクで読む |
+
+商品カードと季節限定カルーセルの HTML は PHP が出力する。フロントで一覧を組み立て直さない。
+
+## TypeScript
+
+- `strict: true`
+- DOM は `querySelector` のあと必ず null チェックする
+- `any` は使わない
+- ESM のみ
+
+```ts
+const root = document.querySelector<HTMLElement>('[data-hero]');
+if (!root) return;
+```
+
+## データ
+
+`bkeryTheme` は `inc/enqueue.php` が渡す。未定義なら各 `init` は何もせず戻る。
+
+営業判定に使う「今」は閲覧者の端末時刻。サーバー時刻は使わない。曜日は `Date#getDay()`（0 = 日曜）を `isClosedWeekday()` に渡す。
+
+## アクセシビリティ
+
+- モックの `aria-*`、`role`、スキップリンク、ダイアログを残す
+- ダイアログを開いている間は `html` に `is-locked` を付け、閉じたら外す
+- Esc でダイアログを閉じる
+- 開いたとき、閉じる操作へフォーカスを移す
+- 固定ナビは非表示のあいだ `inert` にする
+
+## パフォーマンス
+
+- ヒーロー先頭画像以外は `loading="lazy"` と `decoding="async"`
+- 幅 768px 未満では PC 背景用の画像を読み込まない
+- 製造動画は再生ボタンまで `src` をセットしない
+- ヒーローと背景の自動切替は、ホバー中・画面外・非表示タブ・`prefers-reduced-motion` では止める
+- 画像の `width` / `height` は添付ファイルの実寸を出す
+
+## ファイル末尾
+
+末尾改行あり、末尾空白なし、LF、UTF-8（BOM なし）、インデントはスペース 2。

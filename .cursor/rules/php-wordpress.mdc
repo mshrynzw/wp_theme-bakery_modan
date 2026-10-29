@@ -1,0 +1,107 @@
+---
+description: PHP / WordPress テンプレートの規約（テキストドメイン bakery-s、関数プレフィックス bkery_）
+globs: "**/*.php"
+alwaysApply: false
+---
+
+# PHP / WordPress 規約
+
+## 命名
+
+- 関数: `bkery_` プレフィックス必須（例: `bkery_get_theme_mod`）
+- テキストドメイン: `'bakery-s'`（`style.css` の `Text Domain` と一致）
+- カスタマイザー設定 ID: `bkery_` プレフィックス。キーの正本は `inc/theme-mods.php` の `bkery_theme_mod_registry()`
+- 投稿メタ: `bkery_bread_line` / `bkery_bread_price` / `bkery_bread_bake_times`
+- カスタム投稿タイプ: `bread`（複数形にしない）
+- タクソノミー: `bread_category`（食事パン `meal` / 甘いパン `sweet` / ドリンク `drink`）
+- パッケージ注釈: `@package bakery-s`
+
+`ember_` や `atelier_` や `kasumi_` を残さない。ディレクトリ名に `ember` は付けない。
+
+## ファイルヘッダ
+
+機能ファイル（`inc/*.php`、`template-parts/*.php`）の冒頭:
+
+```php
+<?php
+/**
+ * 1行で機能名
+ *
+ * @package bakery-s
+ */
+
+defined( 'ABSPATH' ) || exit;
+```
+
+## エスケープ（必須）
+
+出力するすべての値をエスケープする。
+
+| 出力先 | 関数 |
+|---|---|
+| テキストノード | `esc_html()` / `esc_html_e()` |
+| HTML 属性値 | `esc_attr()` / `esc_attr_e()` |
+| URL（href / src） | `esc_url()` |
+| 翻訳 + HTML 許可 | `wp_kses_post()` |
+| 改行を `<br>` に | `nl2br( esc_html( $text ) )` |
+
+カスタマイザーの HTML 欄（`type: html`）だけ `wp_kses_post()` で出してよい。それ以外の本文はテキストとして逃がす。
+
+## 翻訳
+
+```php
+__( '季節限定のパン', 'bakery-s' )
+esc_html_e( '住所をコピーしました', 'bakery-s' )
+```
+
+画面に最初から出ている文言の初期値は `bkery_theme_mod_registry()` の `default` に置き、テンプレートへ直書きしない。
+
+## アセット
+
+`<script>` / `<link>` の直書きは禁止。`inc/enqueue.php` の `wp_enqueue_*` と `filemtime()` を使う。
+
+- CSS: `dist/css/app.css`（ハンドル `bkery-app`）
+- JS: `dist/js/theme.js`（ハンドル `bkery-main`、`type="module"`）
+- フォント: Outfit / Zen Kaku Gothic New（`inc/enqueue.php` の Google Fonts）
+- フロントへ渡すオブジェクト名: `bkeryTheme`（`bkery_get_frontend_data()` の戻り値）
+
+## コンテンツの境界
+
+- パンは CPT `bread`。標準投稿 `post` では作らない。
+- 店主はカスタマイザー。ユーザーアカウントや STAFF CPT にしない。
+- 店内写真・製造動画・PC 背景はカスタマイザーの添付 ID。ギャラリー CPT は作らない。
+- お知らせ一覧、サイト内検索、予約サイト、電話番号、メール、Instagram 以外の SNS は作らない。
+- 定休日（`bkery_shop_closed_weekdays`）だけは、モックが毎日営業だった点を補う設定として持つ。
+
+## カスタマイザー
+
+- `add_setting` には必ず `sanitize_callback` を渡す。登録は `bkery_customize_register()` のループに乗せ、個別の `add_setting` を散らさない。
+- 新しいキーは `bkery_theme_mod_registry()` に足し、`docs/design/03_customizer.md` の表も同じ変更で更新する。
+- テンプレートは `bkery_get_theme_mod( 'bkery_xxx' )` を使う。`get_theme_mod()` をテンプレートへ直書きしない。
+- 画像は添付 ID（`absint`）。表示は `wp_get_attachment_image()`。
+
+## パンのメタ
+
+| キー | 値 |
+|---|---|
+| `bkery_bread_line` | `seasonal` または `regular` |
+| `bkery_bread_price` | 0 以上の整数（円） |
+| `bkery_bread_bake_times` | `bkery_sanitize_bake_times()` 済みの `HH:MM` カンマ区切り |
+
+保存時は nonce `bkery_bread_meta` と `current_user_can( 'edit_post', $post_id )` を確認する。
+
+## クエリ
+
+トップの商品一覧は `WP_Query` で取る。
+
+- 季節限定: `bkery_bread_line` = `seasonal`、`menu_order` 昇順
+- 通年: `bkery_bread_line` = `regular`、カテゴリごとに `menu_order` 昇順
+- 焼き上がり表は保存済みの文字列を `bkery_build_bake_schedule()` に渡して組み立てる。時刻の並びをテンプレート側で並べ替えない。
+
+## やってはいけないこと
+
+- `docs/ui_reference/` と `docs/client/` の編集
+- `dist/` の手動編集
+- jQuery、ACF、Contact Form 7 の追加
+- プレフィックスなしのグローバル関数
+- モックに無い下層ページ（`/news/`、`/menu/` アーカイブ、`/about/`、`/staff/`）の追加

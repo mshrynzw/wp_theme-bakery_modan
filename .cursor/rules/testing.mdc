@@ -1,0 +1,37 @@
+---
+description: 実装変更時は単体・結合テストも追加する
+alwaysApply: true
+---
+
+# テスト規約
+
+ロジックを追加・変更するときは、同じ変更内で単体テストと結合テストも書く。
+テストを書けない場合は、理由と手動確認観点を作業報告に明記する。
+
+## 置き場所
+
+- 単体 PHP: `tests/unit/php/*Test.php`
+- 単体 TS: `tests/unit/js/*.test.ts`
+- 結合 PHP: `tests/integration/php/*Test.php`
+- 総合: `tests/system/`（Excel・手動テスト資料）
+
+## 実装ルール
+
+- PHP 単体は WordPress 非依存の純粋ロジックを対象にし、`tests/unit/php/bootstrap.php` の読み込みだけで足りるようにする。
+- PHP 結合は `WP_UnitTestCase` を使い、CPT `bread` / タクソノミー `bread_category` / メタ保存 / nonce / 権限 / カスタマイザー sanitize を検証する。
+- TS 単体は Vitest + jsdom を使い、DOM を組んで `src/<feature>.ts` の公開関数を検証する。
+  営業状況と焼き上がりの時刻計算は `src/shop-status.ts`（実装済み。仕様を変えるときはテストを先に直す）。
+- 既存挙動を変える場合は、先に失敗するテストを追加してから実装を直す。
+
+## 実行コマンド
+
+- PHP 単体: `composer test:unit`
+- PHP 結合: `composer test:integration`
+- TS 単体: `pnpm test`
+
+## すでにテストがある処理
+
+- `inc/shop-hours.php` … 時刻・定休日・焼き上がり集約
+- `inc/theme-mods.php` … 設定キーの一意性とセクション対応
+- `inc/colors.php` の `bkery_color_declaration_block()`
+- `src/shop-status.ts` … 営業状況・次の焼き上がり・待ち時間

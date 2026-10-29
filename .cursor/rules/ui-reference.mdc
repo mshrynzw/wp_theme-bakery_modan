@@ -1,0 +1,49 @@
+---
+description: docs/ui_reference はデザインの正本。編集せず、テーマへ移すときの対応表。
+globs: "docs/ui_reference/**"
+alwaysApply: false
+---
+
+# docs/ui_reference の扱い
+
+`docs/ui_reference/` は Bakery S リニューアルのデザイン正本。テーマの出力には含めない。
+HTML・CSS・JS・README を編集しない。`docs/client/` も編集しない。
+
+見た目と画面構成は `index.html` / `style.css` / `script.js` に合わせる。
+クライアントメモとモックで差があるときはモックを優先する。
+定休日の設定だけは、モックが毎日営業で計算している点を補うためにテーマ側へ足してある。
+
+WordPress 化するときは、この HTML のクラスと区間を `front-page.php` と `template-parts/` へ移す。
+商品一覧の中身は `script.js` の `DATA` ではなく CPT `bread` から出す。
+
+## モック → テーマ
+
+| モック | 移植先 | データの出どころ |
+|---|---|---|
+| `.stage` / `.rail` | `header.php`（または `template-parts/stage.php` と `template-parts/rail.php`） | シーンは `bkery_scene_*`。768px 未満では背景画像を出さない |
+| `#hero` | `template-parts/hero.php` | `bkery_hero_*`。サイト名はサイトのタイトル |
+| `#concept` | `template-parts/concept.php` | `bkery_concept_*` と `bkery_point_*` |
+| `#gallery` | `template-parts/gallery.php` | `bkery_gallery_*` と `bkery_video_*` |
+| `#season` | `template-parts/season.php` | `bkery_bread_line=seasonal` |
+| `#menu` | `template-parts/menu.php` | `bkery_bread_line=regular` と `bread_category` |
+| `#bake` | `template-parts/bake.php` | 各商品の `bkery_bread_bake_times` を集約 |
+| `#owner` | `template-parts/owner.php` | `bkery_owner_*` |
+| `#shop` | `template-parts/shop.php` | `bkery_shop_*`。イラスト地図の SVG はテンプレートに残す |
+| `#instagram` と `.closing` | `template-parts/instagram.php` | `bkery_instagram_*` / `bkery_link_*` / `bkery_closing_*` |
+| `.dock` | `template-parts/dock.php` | アンカーは固定（`#season` `#menu` `#bake` `#shop` `#instagram`） |
+| `footer.footer` | `footer.php` | 店名はサイトのタイトル。注記は `bkery_footer_note` |
+| `#product-sheet` `#lightbox` `#video-dialog` | `template-parts/dialogs.php` を `footer.php` の直前に 1 回 | 中身は TS が切り替える |
+| SVG スプライト | `header.php` の先頭 | `index.html` の `<symbol>` をそのまま移す |
+| `:root` と各セクションの CSS | `src/styles/theme.css` | カスタマイザーが同じ変数名で上書きする |
+| `getStatus` / `getBake` / `waitText` | `src/shop-status.ts` | 実装済み。DOM 更新は `src/status.ts` |
+
+## 移植時のチェックリスト
+
+- [ ] 店名・住所・営業時間・価格・商品名・店主名・SNS をカスタマイザーか投稿にした
+- [ ] モックの「サンプル情報」バッジは出さない
+- [ ] 商品リストを JS で再生成せず、PHP のマークアップをモックのカードと同じクラスにする
+- [ ] ダイアログは `<dialog>` のままにし、`data-*` とイベント委譲で開閉する
+- [ ] クラス名を Tailwind のユーティリティへ置き換えない
+- [ ] 画像は `wp_get_attachment_image()`。ヒーロー先頭だけ `fetchpriority="high"`、ほかは `loading="lazy"`
+- [ ] 動画ファイルが無いときはモックと同じプレースホルダーを出す
+- [ ] `docs/ui_reference/` 自体は変更していない

@@ -1,0 +1,32 @@
+# Node / pnpm
+node_modules/
+
+# Composer / PHPUnit
+vendor/
+composer.phar
+php-unit.ini
+.phpunit.cache/
+.phpunit.result.cache
+
+# Vite / TypeScript 中間生成物
+.vite/
+*.tsbuildinfo
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ログ
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 環境変数
+.env
+.env.*
+!.env.example
+
+# 翻訳バイナリ
+languages/*.mo
